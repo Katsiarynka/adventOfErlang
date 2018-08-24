@@ -10,7 +10,7 @@
 len(List) ->
     len(List, 0).
 
-len([Head | Tail], Acc) ->
+len([_Head | Tail], Acc) ->
     len(Tail, Acc + 1);
 
 len([], Acc) ->
