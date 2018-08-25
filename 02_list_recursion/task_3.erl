@@ -10,8 +10,8 @@
 member(Elem, List) ->
     case List of 
         [] -> false;
-        [Elem, _] -> true;
-        [_, Tail] -> member(Elem, Tail)
+        [Elem | _] -> true;
+        [_| Tail] -> member(Elem, Tail)
     end.    
 
 
@@ -30,11 +30,11 @@ filter(Pred, List) ->
     filter(Pred, List, []).
 
 filter(_Pred, [], Acc) ->
-    list:reverse(Acc);
+    lists:reverse(Acc);
 
 filter(Pred, [Head|Tail], Acc) ->
     case Pred(Head) of
-        true -> filter(Pred, Tail, [Head, Acc]);
+        true -> filter(Pred, Tail, [Head| Acc]);
         _ -> filter(Pred, Tail, Acc)
     end.
 

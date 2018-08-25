@@ -10,8 +10,10 @@
 dropwhile(Pred, List) ->
     case List of
         [] -> List;
-        [32, Tail] -> dropwhile(Pred, Tail);
-        _ -> List
+        [Head| Tail] -> case Pred(Head) of
+                            true -> dropwhile(Pred, Tail);
+                            _ -> List
+                        end
     end.
 
 
@@ -29,7 +31,18 @@ dropwhile_test() ->
 %% implement lists:takewhile/2
 %% http://www.erlang.org/doc/man/lists.html#takewhile-2
 takewhile(Pred, List) ->
-    list:reverse(dropwhile(Pred, lists:reverse(List))).
+    takewhile(Pred, List, []).
+
+
+takewhile(_Pred, [], Acc) ->
+    lists:reverse(Acc);
+
+takewhile(Pred, [Head | Tail], Acc) ->
+    case Pred(Head) of
+        true -> takewhile(Pred, Tail, [Head| Acc]);
+        _ -> lists:reverse(Acc)
+    end.
+
 
 takewhile_test() ->
     F = fun(Val) -> Val =:= 32 end,
