@@ -59,8 +59,18 @@ sample_champ() ->
     ].
 
 
-get_stat(Champ) ->
-    {0, 0, 0.0, 0.9}.
+getTeamState({team, _, Players}) ->
+  lists:foldl(
+    fun({_, _Name, Age, Rating, Health}, {AA, AR, AH, Count}) -> 
+      {AA + Age, AR + Rating, AH + Health, Count + 1} end, {0, 0, 0, 0}, Players
+    ).
+
+get_stat(Chump) ->
+  TeamStat = lists:map(fun(Team) -> getTeamState(Team) end, Chump),
+  CommonTeamStat = lists:foldl(fun({Age, Rating, Health, Count}, {AA, AR, AH, ACount}) ->
+     {AA + Age, AR + Rating, AH + Health, ACount + Count} end, {0, 0, 0, 0}, TeamStat),
+  {CAge, CRating, _CHealth, CCount} = CommonTeamStat,
+  {length(TeamStat), CCount, CAge/CCount, CRating / CCount}.
 
 
 get_stat_test() ->
@@ -68,8 +78,22 @@ get_stat_test() ->
     ok.
 
 
+filterHealthPlayers({team, _, Players}) ->
+  lists:filter(fun({_, _Name, Age, Rating, Health}) -> Health > 50 end, Players).
+  % lists:foldl(
+  %   fun({_, _Name, Age, Rating, Health}, {AA, AR, AH, Count}) -> 
+  %     {AA + Age, AR + Rating, AH + Health, Count + 1} end, {0, 0, 0, 0}, HealthedPlayers
+  %   ).
+
+
 filter_sick_players(Champ) ->
-    Champ.
+  HealthTeams = []
+
+  % TeamStat = lists:map(fun(Team) -> filterHealthPlayers(Team) end, Champ),
+  % CommonTeamStat = lists:foldl(fun({Age, Rating, Health, Count}, {AA, AR, AH, ACount}) ->
+  %    {AA + Age, AR + Rating, AH + Health, ACount + Count} end, {0, 0, 0, 0}, TeamStat),
+  % {CAge, CRating, _CHealth, CCount} = CommonTeamStat,
+  % {length(TeamStat), CCount, CAge/CCount, CRating / CCount}.
 
 
 filter_sick_players_test() ->
