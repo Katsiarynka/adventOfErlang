@@ -4,7 +4,7 @@
 
 -export([init/0,
          add_idea/5, get_idea/1,
-         ideas_by_author/1, ideas_by_rating/1,
+         % ideas_by_author/1, ideas_by_rating/1,
          get_authors/0]).
 
 -record(idea, {id, title, author, rating, description}).
@@ -37,20 +37,35 @@ init() ->
 
 
 add_idea(Id, Title, Author, Rating, Description) ->
+    ets:insert(great_ideas_table, #idea{id=Id, title=Title, author=Author, 
+      rating=Rating, description=Description}),
     ok.
 
 
 get_idea(Id) ->
-    not_found.
+  case ets:lookup(great_ideas_table, Id) of 
+    [] -> not_found;
+    [Idea] -> {ok, Idea}
+  end.
 
 
 ideas_by_author(Author) ->
-    [].
+    ets:match_object(great_ideas_table, _, _, Author, ).
 
-
-ideas_by_rating(Rating) ->
-    [].
+% ideas_by_rating(Rating) ->
+%     [].
 
 
 get_authors() ->
-    [].
+    MS = ets:fun2ms(fun(#idea{author = Author}) -> Author end),
+    Authors = ets:select(great_ideas_table, MS),
+    Authors2 = lists:foldl(fun(Author, Acc) ->
+                                   case maps:find(Author, Acc) of
+                                       {ok, Num} -> Acc#{Author => Num + 1};
+                                       error -> Acc#{Author => 1}
+                                   end
+                           end,
+                           #{}, Authors),
+    lists:sort(fun({N1, I}, {N2, I}) -> N1 < N2;
+                  ({_, I1}, {_, I2}) -> I1 > I2
+               end, maps:to_list(Authors2)).
