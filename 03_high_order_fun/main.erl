@@ -1,6 +1,7 @@
 -module(main).
 
--export([sample_champ/0, get_stat/1, filter_sick_players/1, make_pairs/2]).
+-export([sample_champ/0, get_stat/1, filter_sick_players/1, 
+  filterHealthPlayers/1, make_pairs/2]).
 -include_lib("eunit/include/eunit.hrl").
 
 
@@ -73,27 +74,31 @@ get_stat(Chump) ->
   {length(TeamStat), CCount, CAge/CCount, CRating / CCount}.
 
 
+
 get_stat_test() ->
     ?assertEqual({5,40,24.85,242.8}, get_stat(sample_champ())),
     ok.
 
 
-filterHealthPlayers({team, _, Players}) ->
-  lists:filter(fun({_, _Name, Age, Rating, Health}) -> Health > 50 end, Players).
-  % lists:foldl(
-  %   fun({_, _Name, Age, Rating, Health}, {AA, AR, AH, Count}) -> 
-  %     {AA + Age, AR + Rating, AH + Health, Count + 1} end, {0, 0, 0, 0}, HealthedPlayers
-  %   ).
+filterHealthPlayers({team, Name, Players}) ->
+  {team, Name, [{player, Name, Age, Rating, Health} || {player, Name, Age, Rating, Health} <- Players, Health >= 50]}.
+  
+
+% get_females_id_name2(Users) ->
+%     lists:filtermap(fun({user, _, _, male, _}) -> false;
+%                        ({user, Id, Name, female, _}) -> {true, {Id, Name}}
+%                     end, Users).
+
+% filter_sick_players(Champ) ->
+%   HealthedChamp = [];
+%   HealthTeams = lists:filtermap(fun({team, Name, Players}) -> 
+%     filteredHealthPlayers = filterHealthPlayers(Players),
+%     case lists:len(filterHealthPlayers) > 5 of true -> ; false -> false end end, Champ),
 
 
 filter_sick_players(Champ) ->
-  HealthTeams = []
-
-  % TeamStat = lists:map(fun(Team) -> filterHealthPlayers(Team) end, Champ),
-  % CommonTeamStat = lists:foldl(fun({Age, Rating, Health, Count}, {AA, AR, AH, ACount}) ->
-  %    {AA + Age, AR + Rating, AH + Health, ACount + Count} end, {0, 0, 0, 0}, TeamStat),
-  % {CAge, CRating, _CHealth, CCount} = CommonTeamStat,
-  % {length(TeamStat), CCount, CAge/CCount, CRating / CCount}.
+    HealthyTeams = lists:map(fun filterHealthPlayers/1, Champ),
+    lists:filter(fun({team, _, Players}) -> length(Players) >= 5 end, HealthyTeams).
 
 
 filter_sick_players_test() ->
